@@ -19,6 +19,8 @@ class GoogleDNSUpdater:
         return self.dns_driver.list_zones()
 
     def format_record_name(self, name, zoneDomain):
+        if "" == name:
+            return zoneDomain
         return "{}.{}".format(name, zoneDomain)
 
     def get_record_id_for_record_name(self, zone, name):
