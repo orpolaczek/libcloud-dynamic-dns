@@ -3,6 +3,7 @@ from libcloud.common.types import LibcloudError
 from libcloud.dns.drivers.google import GoogleDNSDriver
 from libcloud.dns.types import RecordType
 import requests
+import sys
 from config import Config
 
 
@@ -68,7 +69,24 @@ class GoogleDNSUpdater:
 if __name__ == '__main__':
     WHATS_MY_IP_URL = "https://api.ipify.org"
     current_ip = requests.get(WHATS_MY_IP_URL).text
-    gdns = GoogleDNSUpdater()
-    result = gdns.update_record_ip(Config.A_RECORD_ZONE_NAME, Config.A_RECORD_NAME,
-                                   current_ip, Config.A_RECORD_TTL_SECONDS)
-    print("SUCCESS" if result else "FAILURE")
+    
+    last_ip = None
+    try:
+        with open("last_ip", "r") as f:
+            last_ip = f.readline()
+    except:
+        None
+
+    if last_ip == current_ip:
+        print("No update needed. IP didn't change: %s" % current_ip)
+    else:
+        gdns = GoogleDNSUpdater()
+        result = gdns.update_record_ip(Config.A_RECORD_ZONE_NAME, Config.A_RECORD_NAME,
+                                       current_ip, Config.A_RECORD_TTL_SECONDS)
+        if result:
+            with open("last_ip", "w") as f:
+                f.write(current_ip)
+            print("SUCCESS")
+        else:
+            print("FAILURE")
+            sys.exit(1)
