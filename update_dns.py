@@ -54,6 +54,9 @@ class GoogleDNSUpdater:
         # Create or update an existing record with record_data
         if not dns_record:
             return self.dns_driver.create_record(formatted_record_name, zone, RecordType.A, record_data)
+        elif a_record_value in dns_record.data['rrdatas']:
+            print(f"{dns_record.name} is already set to {a_record_value}. Not updating.")
+            return True
         else:
             if self.dns_driver.delete_record(dns_record):
                 return self.dns_driver.create_record(formatted_record_name, zone, RecordType.A, record_data)
